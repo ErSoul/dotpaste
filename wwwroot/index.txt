@@ -1,3 +1,15 @@
-MinBin
+dotpaste
 
-Simple pastebin service
+Terminal friendly pastebin service.
+
+Usage Examples:
+
+- Upload file's content from STDIN
+
+cat my_file | curl -sF 'content=<-' http://mydomain[:$PORT]
+
+cat my_file | curl -H 'Content-Type: text/plain' --data-binary @- http://mydomain[:$PORT]
+
+- Upload a file directly
+
+curl -H 'Content-Type: text/plain' --data-binary @my_file http://mydomain[:$PORT]
