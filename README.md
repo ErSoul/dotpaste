@@ -1,15 +1,12 @@
 # dotpaste
 
-Another terminal-friendly dotpaste.
+Another terminal-friendly pastebin.
 
 ## Description
 
-Accepted content types are:
+All data will be volatile. No persistence.
 
-- _text/plain_
-- _text/html_
-- _application/json_
-- _application/javascript_
+Operations are made at filesystem-level, instead of a database-level.
 
 ## Environment
 
@@ -38,8 +35,6 @@ Upload file's content from ___STDIN___:
 Upload a file directly:
 
 `curl -H 'Content-Type: text/plain' --data-binary @my_file http://mydomain[:$PORT]`
-
-`curl -sF "content=@my_file" http://mydomain[:$PORT]`
 
 The responses will be an URL to the file's content:
 
