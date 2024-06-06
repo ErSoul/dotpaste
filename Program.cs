@@ -51,6 +51,14 @@ string[] acceptedContentTypes = [
     "application/xml"
 ];
 
+string[] markupLanguages = [
+    "markup",
+    "html",
+    "xml",
+    "svg",
+    "rss"
+];
+
 int fileID = 0; //-- TODO: make thread-safe
 
 app.MapGet("/", (HttpContext context) =>
@@ -100,6 +108,9 @@ app.MapGet("/content/{file}", (string file, [FromQuery(Name = "lang")] string? l
     {
         if(lang == null)
             return Results.File(UPLOADS_PATH + file, "text/plain");
+
+        if (markupLanguages.Any(ml => lang == ml))
+            return Results.Text(View.TemplateHTML(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
 
         return Results.Text(View.Template(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
     } catch (FileNotFoundException) {
