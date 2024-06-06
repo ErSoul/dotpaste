@@ -54,5 +54,4 @@ https://prismjs.com/#supported-languages
 
 ## TODO
 
-- File's ID should be thread safe.
 - Limit content's length.

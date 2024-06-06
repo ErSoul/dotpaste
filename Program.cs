@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using dotpaste;
+using System.Timers;
+
+const int TIMER_INTERVAL = 86400000; //-- 24h
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -59,7 +62,25 @@ string[] markupLanguages = [
     "rss"
 ];
 
-int fileID = 0; //-- TODO: make thread-safe
+var fileID = new ThreadSafeCounter();
+
+var resetTimer = new System.Timers.Timer(TIMER_INTERVAL);
+resetTimer.Elapsed += (object? source, ElapsedEventArgs e) =>
+{
+    app.Logger.LogInformation("Started clean operation on '{}'", UPLOADS_PATH);
+    var directory = new DirectoryInfo(UPLOADS_PATH);
+
+    foreach(var file in directory.EnumerateFiles())
+    {
+        app.Logger.LogDebug("Deleting file '{}'", file.FullName);
+        file.Delete();
+        app.Logger.LogDebug("Deleted file '{}'", file.FullName);
+    }
+
+    fileID = new ThreadSafeCounter();
+    app.Logger.LogInformation("Completed clean operation on '{}'", UPLOADS_PATH);
+};
+resetTimer.Start();
 
 app.MapGet("/", (HttpContext context) =>
 {
@@ -72,7 +93,8 @@ app.MapGet("/", (HttpContext context) =>
 }).WithName("Index");
 
 app.MapPost("/", (HttpRequest request) => {
-    var currentFileURL = WebEncoders.Base64UrlEncode(BitConverter.GetBytes(++fileID));
+    fileID.Increment();
+    var currentFileURL = WebEncoders.Base64UrlEncode(BitConverter.GetBytes(fileID.Value));
     var currentURL = $"{request.Scheme}://{request.Host.Value}/content/";
 
     if (request.HasFormContentType)
@@ -85,7 +107,7 @@ app.MapPost("/", (HttpRequest request) => {
 
         if(request.Form.Files.Any() && request.Form.Files[0].Name == "content" && acceptedContentTypes.Any(ct => request.Form.Files[0].ContentType == ct))
         {
-            FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.Create);
+            FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
             request.Form.Files[0].OpenReadStream().CopyTo(fileStream);
             fileStream.Dispose();
             return Results.Text(currentURL + currentFileURL);
@@ -94,7 +116,7 @@ app.MapPost("/", (HttpRequest request) => {
 
     if(acceptedContentTypes.Any(ct => request.ContentType == ct))
     {
-        FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.Create);
+        FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
         request.BodyReader.AsStream().CopyTo(fileStream);
         fileStream.Dispose();
         return Results.Text(currentURL + currentFileURL);
