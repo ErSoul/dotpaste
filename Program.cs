@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using dotpaste;
 using System.Timers;
+using dotpaste;
 
 const int TIMER_INTERVAL = 86400000; //-- 24h
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+
 app.UseStaticFiles();
 
 var options = new Queue<string>(args);
@@ -19,7 +20,7 @@ while (options.TryDequeue(out string? option))
         if (option.Contains('='))
             ARGS_UPLOAD_PATH = option.Split('=')[1];
         else
-            ARGS_UPLOAD_PATH = options.Dequeue();
+            options.TryDequeue(out ARGS_UPLOAD_PATH);
 }
 
 string DEFAULT_UPLOADS_PATH = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + Path.DirectorySeparatorChar + "uploads" + Path.DirectorySeparatorChar;
@@ -29,6 +30,9 @@ try
 {
     if (!Directory.Exists(UPLOADS_PATH))
         Directory.CreateDirectory(UPLOADS_PATH);
+
+    if(!Path.EndsInDirectorySeparator(UPLOADS_PATH))
+        UPLOADS_PATH += Path.DirectorySeparatorChar;
 }
 catch (Exception)
 {
@@ -126,18 +130,16 @@ app.MapPost("/", (HttpRequest request) => {
 }).DisableAntiforgery().WithName("Post");
 
 app.MapGet("/content/{file}", (string file, [FromQuery(Name = "lang")] string? lang) => {
-    try
-    {
-        if(lang == null)
-            return Results.File(UPLOADS_PATH + file, "text/plain");
-
-        if (markupLanguages.Any(ml => lang == ml))
-            return Results.Text(View.TemplateHTML(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
-
-        return Results.Text(View.Template(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
-    } catch (FileNotFoundException) {
+    if(! File.Exists(UPLOADS_PATH + file))
         return Results.NotFound();
-    }
+
+    if (lang == null)
+        return Results.File(UPLOADS_PATH + file, "text/plain");
+
+    if (markupLanguages.Any(ml => lang == ml))
+        return Results.Text(View.TemplateHTML(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
+
+    return Results.Text(View.Template(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
 }).WithName("GetFile");
 
 app.Run();
