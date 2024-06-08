@@ -8,6 +8,10 @@ const int TIMER_INTERVAL = 86400000; //-- 24h
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
 app.UseStaticFiles();
 
 var options = new Queue<string>(args);
@@ -106,7 +110,9 @@ app.MapPost("/", (HttpRequest request) => {
         if(request.Form.TryGetValue("content", out var content))
         {
             File.WriteAllText(UPLOADS_PATH + currentFileURL, request.Form["content"]);
-            return Results.Text(currentURL + currentFileURL);
+            return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+                    Results.Redirect(currentURL + currentFileURL) :
+                    Results.Text(currentURL + currentFileURL);
         }
 
         if(request.Form.Files.Any() && request.Form.Files[0].Name == "content" && acceptedContentTypes.Any(ct => request.Form.Files[0].ContentType == ct))
@@ -114,7 +120,9 @@ app.MapPost("/", (HttpRequest request) => {
             FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
             request.Form.Files[0].OpenReadStream().CopyTo(fileStream);
             fileStream.Dispose();
-            return Results.Text(currentURL + currentFileURL);
+            return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+                    Results.Redirect(currentURL + currentFileURL) :
+                    Results.Text(currentURL + currentFileURL);
         }
     }
 
@@ -123,7 +131,9 @@ app.MapPost("/", (HttpRequest request) => {
         FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
         request.BodyReader.AsStream().CopyTo(fileStream);
         fileStream.Dispose();
-        return Results.Text(currentURL + currentFileURL);
+        return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+                Results.Redirect(currentURL + currentFileURL) :
+                Results.Text(currentURL + currentFileURL);
     }
 
     return Results.BadRequest("Unsupported content type.");
