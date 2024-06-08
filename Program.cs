@@ -62,14 +62,6 @@ string[] acceptedContentTypes = [
     "application/xml"
 ];
 
-string[] markupLanguages = [
-    "markup",
-    "html",
-    "xml",
-    "svg",
-    "rss"
-];
-
 var fileID = new ThreadSafeCounter();
 
 var resetTimer = new System.Timers.Timer(TIMER_INTERVAL);
@@ -146,10 +138,7 @@ app.MapGet("/content/{file}", (string file, [FromQuery(Name = "lang")] string? l
     if (lang == null)
         return Results.File(UPLOADS_PATH + file, "text/plain");
 
-    if (markupLanguages.Any(ml => lang == ml))
-        return Results.Text(View.TemplateHTML(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
-
-    return Results.Text(View.Template(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
+    return Results.Text(View.TemplateHTML(File.ReadAllText(UPLOADS_PATH + file)), "text/html");
 }).WithName("GetFile");
 
 app.Run();

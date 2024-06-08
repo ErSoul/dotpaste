@@ -2,6 +2,7 @@
 {
     public class View
     {
+		[Obsolete("This method returns inconsistent results. Use View.TemplateHTML()")]
         public static string Template(string fileContent)
         {
             return $@"
@@ -44,9 +45,7 @@
 		<link href=""/css/prism.css"" rel=""stylesheet"" />
 	</head>
 	<body class='line-numbers'>
-		<script type=""text/plain"" class='language-markup'>
-{fileContent}
-		</script>
+		<script id='code-block' type=""text/plain"">{fileContent}</script>
 		<footer>
 			<script src=""/js/prism.js""></script>
 			<script>
