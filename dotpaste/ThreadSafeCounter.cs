@@ -1,4 +1,6 @@
-﻿namespace dotpaste
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace dotpaste
 {
     public class ThreadSafeCounter
     {
@@ -10,6 +12,7 @@
             return Interlocked.Increment(ref _count);
         }
 
+        [ExcludeFromCodeCoverage]
         public int Decrement()
         {
             // Atomically decrements the counter and returns the new value

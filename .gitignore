@@ -4,3 +4,4 @@ obj/
 .vscode/
 appSettings.*.json
 *.csproj.user
+TestResults/

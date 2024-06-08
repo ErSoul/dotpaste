@@ -27,7 +27,7 @@ while (options.TryDequeue(out string? option))
             options.TryDequeue(out ARGS_UPLOAD_PATH);
 }
 
-string DEFAULT_UPLOADS_PATH = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + Path.DirectorySeparatorChar + "uploads" + Path.DirectorySeparatorChar;
+string DEFAULT_UPLOADS_PATH = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + Path.DirectorySeparatorChar + "uploads";
 string UPLOADS_PATH = ARGS_UPLOAD_PATH ?? Environment.GetEnvironmentVariable("DOTPASTE_UPLOADS_PATH") ?? DEFAULT_UPLOADS_PATH;
 
 try
@@ -142,3 +142,5 @@ app.MapGet("/content/{file}", (string file, [FromQuery(Name = "lang")] string? l
 }).WithName("GetFile");
 
 app.Run();
+
+public partial class Program;

@@ -1,8 +1,11 @@
-﻿namespace dotpaste
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace dotpaste
 {
     public class View
     {
-		[Obsolete("This method returns inconsistent results. Use View.TemplateHTML()")]
+        [ExcludeFromCodeCoverage]
+        [Obsolete("This method returns inconsistent results. Use View.TemplateHTML()")]
         public static string Template(string fileContent)
         {
             return $@"
