@@ -3,68 +3,14 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Timers;
 using dotpaste;
 
-const int TIMER_INTERVAL = 86400000; //-- 24h
-
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-});
-app.UseStaticFiles();
-
-var options = new Queue<string>(args);
-
-string? ARGS_UPLOAD_PATH = null;
-
-while (options.TryDequeue(out string? option))
-{
-    if (option.StartsWith("--uploads-path") || option.StartsWith("-u"))
-        if (option.Contains('='))
-            ARGS_UPLOAD_PATH = option.Split('=')[1];
-        else
-            options.TryDequeue(out ARGS_UPLOAD_PATH);
-}
-
-string DEFAULT_UPLOADS_PATH = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + Path.DirectorySeparatorChar + "uploads";
-string UPLOADS_PATH = ARGS_UPLOAD_PATH ?? Environment.GetEnvironmentVariable("DOTPASTE_UPLOADS_PATH") ?? DEFAULT_UPLOADS_PATH;
-
-try
-{
-    if (!Directory.Exists(UPLOADS_PATH))
-        Directory.CreateDirectory(UPLOADS_PATH);
-
-    if (!Path.EndsInDirectorySeparator(UPLOADS_PATH))
-        UPLOADS_PATH += Path.DirectorySeparatorChar;
-}
-catch (Exception)
-{
-    app.Logger.LogError("Couldn't create uploads directory.");
-    Environment.Exit(1);
-}
-
-string[] userAgents = [
-    "Gecko",
-    "Mozilla",
-    "Presto",
-    "Firefox",
-    "EdgeHTML",
-    "Safari",
-    "Chromium"
-];
-
-string[] acceptedContentTypes = [
-    "text/plain",
-    "text/html",
-    "application/json",
-    "application/javascript",
-    "application/xml"
-];
+app.Startup(out string UPLOADS_PATH, args);
 
 var fileID = new ThreadSafeCounter();
 
-var resetTimer = new System.Timers.Timer(TIMER_INTERVAL);
+var resetTimer = new System.Timers.Timer(Properties.TIMER_INTERVAL);
 resetTimer.Elapsed += (object? source, ElapsedEventArgs e) =>
 {
     app.Logger.LogInformation("Started clean operation on '{}'", UPLOADS_PATH);
@@ -86,7 +32,7 @@ app.MapGet("/", (HttpContext context) =>
 {
     var userAgent = context.Request.Headers.UserAgent.ToString();
 
-    if (userAgents.Any(check => userAgent.Contains(check, StringComparison.InvariantCultureIgnoreCase)))
+    if (Properties.UserAgents.Any(check => userAgent.Contains(check, StringComparison.InvariantCultureIgnoreCase)))
         return Results.File("index.html", "text/html");
 
     return Results.File("index.txt", "text/plain");
@@ -103,28 +49,31 @@ app.MapPost("/", (HttpRequest request) =>
         if (request.Form.TryGetValue("content", out var content))
         {
             File.WriteAllText(UPLOADS_PATH + currentFileURL, request.Form["content"]);
-            return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+            app.HandleFileDeletion(UPLOADS_PATH + currentFileURL);
+            return Properties.UserAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                     Results.Redirect(currentURL + currentFileURL) :
                     Results.Text(currentURL + currentFileURL);
         }
 
-        if (request.Form.Files.Any() && request.Form.Files[0].Name == "content" && acceptedContentTypes.Any(ct => request.Form.Files[0].ContentType == ct))
+        if (request.Form.Files.Any() && request.Form.Files[0].Name == "content" && Properties.AcceptedContentTypes.Any(ct => request.Form.Files[0].ContentType == ct))
         {
             FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
             request.Form.Files[0].OpenReadStream().CopyTo(fileStream);
             fileStream.Dispose();
-            return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+            app.HandleFileDeletion(UPLOADS_PATH + currentFileURL);
+            return Properties.UserAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                     Results.Redirect(currentURL + currentFileURL) :
                     Results.Text(currentURL + currentFileURL);
         }
     }
 
-    if (acceptedContentTypes.Any(ct => request.ContentType == ct))
+    if (Properties.AcceptedContentTypes.Any(ct => request.ContentType == ct))
     {
         FileStream fileStream = new(UPLOADS_PATH + currentFileURL, FileMode.CreateNew);
         request.BodyReader.AsStream().CopyTo(fileStream);
         fileStream.Dispose();
-        return userAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
+        app.HandleFileDeletion(UPLOADS_PATH + currentFileURL);
+        return Properties.UserAgents.Any(check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                 Results.Redirect(currentURL + currentFileURL) :
                 Results.Text(currentURL + currentFileURL);
     }

@@ -12,6 +12,10 @@ All data will be volatile. No persistence.
 
 Operations are made at filesystem-level, instead of a database-level.
 
+Everything will be resetted at the beginning of each day.
+
+Each paste will last an hour.
+
 ## Environment
 
 You only need to set an upload's directory. Default value will create an `uploads` directory in the executable's path.
@@ -58,4 +62,5 @@ https://prismjs.com/#supported-languages
 
 ## TODO
 
-- Limit content's length.
+- <s>Limit content's length.</s> (web proxies should handle it)
+- Paste's life interval should come from user input.

@@ -37,7 +37,7 @@ jobs:
     - name: Publish
       run: dotnet publish dotpaste/dotpaste.csproj -c Release -o build
     - name: SCP Uploader
-      uses: ersoul/scp_uploader@v0.1.4-alpha
+      uses: ersoul/scp_uploader@v0.1
       with:
         host: ${{vars.SSH_HOST}}
         username: ${{secrets.SSH_USER}}
