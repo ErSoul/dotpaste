@@ -23,9 +23,9 @@ resetTimer.Elapsed += (object? source, ElapsedEventArgs e) =>
 
     foreach (var file in directory.EnumerateFiles())
     {
-        app.Logger.LogDebug("Deleting file '{}'", file.FullName);
+        app.Logger.LogDebug("Deleting file '{fileName}'", file.FullName);
         file.Delete();
-        app.Logger.LogDebug("Deleted file '{}'", file.FullName);
+        app.Logger.LogDebug("Deleted file '{fileName}'", file.FullName);
     }
 
     fileID = new ThreadSafeCounter();
@@ -36,6 +36,6 @@ resetTimer.Start();
 app.MapIndex();
 app.MapPastes(fileID);
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program;

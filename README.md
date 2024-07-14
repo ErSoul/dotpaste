@@ -1,5 +1,5 @@
 [![Repo Size](https://img.shields.io/github/repo-size/ErSoul/dotpaste?logo=github)](https://github.com/ErSoul/dotpaste)
-[![Build Status](https://github.com/ErSoul/dotpaste/workflows/dotpaste/badge.svg)](https://github.com/ErSoul/dotpaste/actions)
+[![Build Status](https://github.com/ErSoul/dotpaste/workflows/build/badge.svg)](https://github.com/ErSoul/dotpaste/actions)
 [![Made By](https://img.shields.io/badge/Made_By-ErSoul-yellow?logo=dotnet&logoColor=yellow)](https://github.com/ErSoul)
 
 # dotpaste

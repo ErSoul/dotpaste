@@ -22,7 +22,7 @@ namespace dotpaste.Endpoints
                         app.HandleFileDeletion(Props.UPLOADS_PATH + currentFileURL);
                         return Array.Exists(Props.UserAgents, check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                                 Results.Redirect(currentURL + currentFileURL) :
-                                Results.Text(currentURL + currentFileURL);
+                                Results.Text(currentURL + currentFileURL + '\n');
                     }
 
                     if (request.Form.Files.Any() && request.Form.Files[0].Name == "content" && Array.Exists(Props.AcceptedContentTypes, ct => request.Form.Files[0].ContentType == ct))
@@ -33,7 +33,7 @@ namespace dotpaste.Endpoints
                         app.HandleFileDeletion(Props.UPLOADS_PATH + currentFileURL);
                         return Array.Exists(Props.UserAgents, check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                                 Results.Redirect(currentURL + currentFileURL) :
-                                Results.Text(currentURL + currentFileURL);
+                                Results.Text(currentURL + currentFileURL + '\n');
                     }
                 }
 
@@ -45,7 +45,7 @@ namespace dotpaste.Endpoints
                     app.HandleFileDeletion(Props.UPLOADS_PATH + currentFileURL);
                     return Array.Exists(Props.UserAgents, check => request.Headers.UserAgent.ToString().Contains(check, StringComparison.InvariantCultureIgnoreCase)) ?
                             Results.Redirect(currentURL + currentFileURL) :
-                            Results.Text(currentURL + currentFileURL);
+                            Results.Text(currentURL + currentFileURL + '\n');
                 }
 
                 return Results.BadRequest("Unsupported content type.");

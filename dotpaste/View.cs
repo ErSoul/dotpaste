@@ -2,7 +2,7 @@
 
 namespace dotpaste
 {
-    public class View
+    public static class View
     {
         [ExcludeFromCodeCoverage]
         [Obsolete("This method returns inconsistent results. Use View.TemplateHTML()")]
