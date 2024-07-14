@@ -46,7 +46,7 @@ EOF
 fi
 
 dotnet format --verify-no-changes || exit 1
-dotnet test dotpaste.Tests/dotpaste.Tests.csproj --no-build --verbosity normal
+dotnet test dotpaste.Tests/dotpaste.Tests.csproj --no-build --verbosity normal || exit 1
 
 # If there are whitespace errors, print the offending file names and fail.
 exec git diff-index --check --cached $against --
