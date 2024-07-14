@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace dotpaste
+namespace dotpaste.Utils
 {
     public class ThreadSafeCounter
     {
