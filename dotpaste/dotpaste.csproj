@@ -7,5 +7,7 @@
 
 	<PropertyGroup>
 		<ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite</ContainerBaseImage>
+		<ContainerRegistry>ghcr.io</ContainerRegistry>
+		<ContainerRepository>ErSoul/dotpaste</ContainerRepository>
 	</PropertyGroup>
 </Project>
